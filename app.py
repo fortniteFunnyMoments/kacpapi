@@ -47,7 +47,8 @@ class MainApp(BoxLayout):
         super(MainApp, self).__init__(**kwargs)
         self.orientation = 'vertical'
 
-        # Image widgets to show original and augmented images
+
+        img_comparator = BoxLayout(orientation = 'horizontal')
         self.original_image = Image(allow_stretch=True, size_hint_y=None, height=300)
         self.augmented_image = Image(allow_stretch=True, size_hint_y=None, height=300)
         self.label = Label(text="No file selected", size_hint_y=None, height=50)
@@ -55,28 +56,24 @@ class MainApp(BoxLayout):
         self.augmented_image.bind(texture=self.on_texture_load)
         self.original_image.bind(texture=self.on_texture_load)
         
-        # Add widgets to the layout
-        self.add_widget(self.original_image)
-        self.add_widget(self.augmented_image)
+        img_comparator.add_widget(self.original_image)
+        img_comparator.add_widget(self.augmented_image)
         self.add_widget(self.label)
+        self.add_widget(img_comparator)
 
-        # File selection button
         file_button = Button(text="Select Image/Video", size_hint_y=None, height=50)
         file_button.bind(on_press=self.open_file_picker)
         self.add_widget(file_button)
 
-        # Buttons for applying augmentations
         grayscale_button = Button(text="Apply Grayscale", size_hint_y=None, height=50)
         grayscale_button.bind(on_press=self.apply_grayscale)
         self.add_widget(grayscale_button)
 
-        # Slider for brightness adjustment
         self.brightness_slider = Slider(min=-100, max=100, value=0, size_hint_y=None, height=50)
         self.brightness_slider.bind(value=self.apply_brightness)
-        self.add_widget(Label(text="Adjust Brightness", size_hint_y=None, height=50))
+        self.add_widget(Label(text="Adjust Brightness", size_hint_int_y=None, height=50))
         self.add_widget(self.brightness_slider)
 
-        # Slider for scaling
         self.downscale_slider = Slider(min=1, max=10, value=5, size_hint_y=None, height=50)
         self.downscale_slider.bind(value=self.apply_scale)
         self.add_widget(Label(text="Downscale Image", size_hint_y=None, height=50))
@@ -97,6 +94,12 @@ class MainApp(BoxLayout):
         if self.image_handler is not None:
             texture = self.image_handler.display_image()
             image_widget.texture = texture
+
+    def apply_dithering(self, instance):
+        if self.image_handler is not None:
+            img = self.image_handler.get_image()
+            self.image_handler.img = pxl.dithering(img)
+            self.display_image(self.image_handler.get_image(), self.augmented_image)
 
     def apply_grayscale(self, instance):
         if self.image_handler is not None:
