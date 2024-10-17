@@ -48,11 +48,13 @@ class MainApp(BoxLayout):
         self.orientation = 'vertical'
 
         # Image widgets to show original and augmented images
-        self.original_image = Image(size_hint_y=None, height=300)
-        self.augmented_image = Image(size_hint_y=None, height=300)
-        
+        self.original_image = Image(allow_stretch=True, size_hint_y=None, height=300)
+        self.augmented_image = Image(allow_stretch=True, size_hint_y=None, height=300)
         self.label = Label(text="No file selected", size_hint_y=None, height=50)
 
+        self.augmented_image.bind(texture=self.on_texture_load)
+        self.original_image.bind(texture=self.on_texture_load)
+        
         # Add widgets to the layout
         self.add_widget(self.original_image)
         self.add_widget(self.augmented_image)
@@ -69,13 +71,13 @@ class MainApp(BoxLayout):
         self.add_widget(grayscale_button)
 
         # Slider for brightness adjustment
-        self.brightness_slider = Slider(min=-10, max=10, value=0, size_hint_y=None, height=50)
+        self.brightness_slider = Slider(min=-100, max=100, value=0, size_hint_y=None, height=50)
         self.brightness_slider.bind(value=self.apply_brightness)
         self.add_widget(Label(text="Adjust Brightness", size_hint_y=None, height=50))
         self.add_widget(self.brightness_slider)
 
         # Slider for scaling
-        self.downscale_slider = Slider(min=-10, max=10, value=0, size_hint_y=None, height=50)
+        self.downscale_slider = Slider(min=1, max=10, value=5, size_hint_y=None, height=50)
         self.downscale_slider.bind(value=self.apply_scale)
         self.add_widget(Label(text="Downscale Image", size_hint_y=None, height=50))
         self.add_widget(self.downscale_slider)
@@ -114,7 +116,10 @@ class MainApp(BoxLayout):
             img = self.image_handler.get_image()
             self.image_handler.img = pxl.change_image_scale(img, value)
             self.display_image(self.image_handler.get_image(), self.augmented_image)
-
+    def on_texture_load(self, instance, texture):
+        instance.texture.min_filter = 'nearest'
+        instance.texture.mag_filter = 'nearest'
+        
 class MyKivyApp(App):
     def build(self):
         return MainApp()

@@ -5,16 +5,18 @@ class ImageManipulator:
 
     def __init__(self, path=None):
         self.img = None
+        self.original_img = None
         if path:
             self.set_image(path)
 
     def set_image(self, path):
         self.img = cv2.imread(path)
         if self.img is None:
-            raise FileNotFoundError(f"Image at {path} could not be loaded.")        
+            raise FileNotFoundError(f"Image at {path} could not be loaded.")
+        self.original_img = self.img.copy()
     
     def get_image(self):
-        return self.img
+        return self
 
     def save_image(self, path):
         if self.img is not None:
@@ -30,3 +32,6 @@ class ImageManipulator:
             return texture
         else:
             raise ValueError("No image loaded to display.")
+
+    def get_original_image(self):
+        return self.original_img

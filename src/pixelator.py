@@ -1,10 +1,8 @@
 import cv2
 
 def change_image_scale(image, scale):
-    if scale < 0:
-        scale = 0.5 ** abs(scale)
-    if scale == 0:
-        scale = 1
+    image = image.get_original_image()
+    print(image)
     width = int(image.shape[1] * scale / 100)
     height = int(image.shape[0] * scale / 100)
     print("changing image scale:", scale, "w:", width, "h:", height)
