@@ -17,11 +17,20 @@ def shift_edges(edges, dx, dy):
 
 def detect_edges(image): #image has to be grayscale
     edges = cv2.Canny(image, 100, 200)
+    print("detect edges edges:", edges)
     return edges
 
-def add_outline(image, outline): #image has to be grayscale
+def add_outline(image, *args): #image has to be grayscale
+    image = image.get_original_image()
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    if len(image.shape) == 2:
+        print("is grayscale")
+        outline = detect_edges(image)
+    else:
+        outline = detect_edges(gray)
     outline = np.where(outline > 127, 255, 0).astype(np.uint8)
-    combined = np.where(outline == 255, 255, image)
+    combined = np.where(outline == 255, 255, gray)
+    print("add outline:", outline)
     return combined
 
 def dithering(image, *args): #atkinson's algorithm

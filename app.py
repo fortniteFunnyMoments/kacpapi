@@ -53,7 +53,7 @@ class MainApp(BoxLayout):
             "change_scale":pxl.change_image_scale,
             #"detect_edges":pxl.detect_edges,
             #"shift_edges":pxl.shift_edges,
-            #"add_outline":pxl.add_outline,
+            "add_outline":pxl.add_outline,
 
             "grayscale":cagm.grayscale,
             "brightness":cagm.change_brightness,
@@ -72,10 +72,19 @@ class MainApp(BoxLayout):
         self.add_widget(self.label)
         self.add_widget(img_comparator)
 
+        general_img_operator = BoxLayout(orientation = 'horizontal')
+        
         file_button = Button(text="Select Image/Video", size_hint_y=None, height=50)
         file_button.bind(on_press=self.open_file_picker)
-        self.add_widget(file_button)
+        revert_button = Button(text="Revert changes", size_hint_y=None, height=50)
+        save_button = Button(text="Save image", size_hint_y=None, height=50)
+        
+        general_img_operator.add_widget(file_button)
+        general_img_operator.add_widget(revert_button)
+        general_img_operator.add_widget(save_button)
 
+        self.add_widget(general_img_operator)
+        
         self.generate_widgets()
                 
         self.image_handler = None
