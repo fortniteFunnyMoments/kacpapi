@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def grayscale(image):
+def grayscale(image, *args):
     print("image is", image)
     return cv2.cvtColor(image.get_original_image(), cv2.COLOR_BGR2GRAY)
 

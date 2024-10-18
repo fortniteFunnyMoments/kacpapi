@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 def change_image_scale(image, scale):
     image = image.get_original_image()
@@ -23,7 +24,9 @@ def add_outline(image, outline): #image has to be grayscale
     combined = np.where(outline == 255, 255, image)
     return combined
 
-def dithering(image) #atkinson's algorithm
+def dithering(image, *args): #atkinson's algorithm
+    image = image.get_original_image()
+    
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     output = gray.copy().astype(np.float32)
     
@@ -46,4 +49,5 @@ def dithering(image) #atkinson's algorithm
                         output[ny, nx] += quant_error * atkinson_filter[dy, dx]
 
     output = np.where(output > 127, 255, 0).astype(np.uint8) # convert to bin
+    # save as image
     return output
