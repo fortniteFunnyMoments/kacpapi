@@ -12,6 +12,7 @@ from kivy.uix.label import Label
 from kivy.uix.popup import Popup
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.checkbox import CheckBox
 from kivy.uix.image import Image
 from kivy.uix.slider import Slider
 from kivy.uix.textinput import TextInput
@@ -77,7 +78,9 @@ class MainApp(BoxLayout):
         file_button = Button(text="Select Image/Video", size_hint_y=None, height=50)
         file_button.bind(on_press=self.open_file_picker)
         revert_button = Button(text="Revert changes", size_hint_y=None, height=50)
+        revert_button.bind(on_press=self.revert_img)
         save_button = Button(text="Save image", size_hint_y=None, height=50)
+        save_button.bind(on_press=self.save_img)
         
         general_img_operator.add_widget(file_button)
         general_img_operator.add_widget(revert_button)
@@ -93,13 +96,15 @@ class MainApp(BoxLayout):
     def generate_widgets(self):
         for func_name in self.kacpapi_function_map:
             augment_widget_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=50)
-            augment_button = Button(text=str("Test " + func_name), size_hint_x=0.4)
+            function_label = Label(text=func_name)
+            augment_button = Button(text="Test")
             text_input = TextInput(hint_text=func_name.capitalize(), size_hint_x=0.6, multiline=False)
-            apply_button =  Button(text=str("Apply " + func_name), size_hint_x=0.4)
+            apply_button =  Button(text="Apply permanently", size_hint_x=0.4)
 
             augment_button.bind(on_press=self.create_button_callback(func_name, text_input))
-            #apply_button.bind(on_press=self.apply_augment(func_name, text_input))
-            
+            apply_button.bind(on_press=self.apply_augment)
+
+            augment_widget_box.add_widget(function_label)
             augment_widget_box.add_widget(augment_button)
             augment_widget_box.add_widget(text_input)
             augment_widget_box.add_widget(apply_button)
@@ -125,34 +130,6 @@ class MainApp(BoxLayout):
             if func:
                 self.image_handler.img = func(img, *args)
                 self.display_image(self.image_handler.get_image(), self.augmented_image)
-        '''
-        grayscale_button = Button(text="Apply Grayscale", size_hint_y=None, height=50)
-        grayscale_button.bind(on_press=self.apply_grayscale)
-        self.add_widget(grayscale_button)
-
-        self.brightness_slider = Slider(min=-100, max=100, value=0, size_hint_y=None, height=50)
-        self.brightness_slider.bind(value=self.apply_brightness)
-        self.add_widget(Label(text="Adjust Brightness", size_hint_y=None, height=50))
-        self.add_widget(self.brightness_slider)
-
-        
-        self.downscale_slider = Slider(min=1, max=10, value=5, size_hint_y=None, height=50)        
-        self.downscale_slider.bind(value=self.apply_scale)
-        self.add_widget(Label(text="Downscale Image", size_hint_y=None, height=50))
-        self.add_widget(self.downscale_slider)
-        
-
-        self.img_augmentator = BoxLayout(orientation = 'horizontal')
-        self.button = Button(text="Scale", size_hint_x=0.4)
-        self.text_input = TextInput(hint_text='Scale value', size_hint_x=0.4, multiline=False)
-        self.apply_augment_button = Button(text="Apply", size_hint_x=0.4)
-        self.button.bind(on_press=self.apply_scale)
-        self.img_augmentator.add_widget(self.button)
-        self.img_augmentator.add_widget(self.text_input)
-        self.img_augmentator.add_widget(self.apply_augment_button)
-        self.add_widget(self.img_augmentator)
-        '''
-
 
     def generate_augmentation_methods(self):
         for func_name in self.function_map:
@@ -182,6 +159,24 @@ class MainApp(BoxLayout):
         file_picker = FilePickerPopup()
         file_picker.open()
 
+    def revert_img(self, instance):
+        if self.image_handler is not None:
+            og_img = self.image_handler.get_original_image()
+            print(og_img)
+            self.display_image(og_img, self.augmented_image)
+        else:
+            print("no image selected!")
+        
+    def save_img(self, instance):
+        print("Image was saved!")
+
+    def apply_augment(self, instance):
+        if self.image_handler is not None:
+            image_to_apply = self.augmented_image.texture
+            print(image_to_apply)
+            self.image_handler.texture_to_image(image_to_apply)
+        self.display_image(self.image_handler.get_image(), self.augmented_image)
+        
     def load_file(self, file_path):
         self.image_handler = ImageManipulator(file_path)
         self.display_image(self.image_handler.get_image(), self.original_image)

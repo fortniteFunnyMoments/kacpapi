@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 def change_image_scale(image, scale):
-    image = image.get_original_image()
+    #image = image.get_image()
     print(image)
     width = int(image.shape[1] * scale / 100)
     height = int(image.shape[0] * scale / 100)
@@ -21,7 +21,7 @@ def detect_edges(image): #image has to be grayscale
     return edges
 
 def add_outline(image, *args): #image has to be grayscale
-    image = image.get_original_image()
+    #image = image.get_original_image()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     if len(image.shape) == 2:
         print("is grayscale")
@@ -34,7 +34,7 @@ def add_outline(image, *args): #image has to be grayscale
     return combined
 
 def dithering(image, *args): #atkinson's algorithm
-    image = image.get_original_image()
+    #image = image.get_image()
     
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     output = gray.copy().astype(np.float32)
