@@ -2,6 +2,16 @@ import cv2
 import numpy as np
 from kivy.graphics.texture import Texture
 
+def get_image_format(image):
+    if len(image.shape) == 2:  # Grayscale images have two dimensions (height, width)
+        return 'grayscale', 1
+    elif len(image.shape) == 3 and image.shape[2] == 3:  # Color images with 3 channels (BGR)
+        return 'bgr', 3
+    elif len(image.shape) == 3 and image.shape[2] == 4:  # Images with 4 channels (RGBA)
+        return 'rgba', 4
+    else:
+        raise ValueError("Unknown image format.")
+
 class ImageManipulator:
 
     def __init__(self, path=None):
@@ -67,12 +77,18 @@ class ImageManipulator:
 
     def display_image(self):
         if self.img is not None:
-            buffer = cv2.flip(self.img, 0).tobytes()
+            if len(self.img.shape) == 2:  # Grayscale image
+                # Convert grayscale to a 3-channel image (BGR) for displaying in Kivy
+                display_img = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGR)
+            else:
+                display_img = self.img
+
+            buffer = cv2.flip(display_img, 0).tobytes()
             texture = Texture.create(size=(self.img.shape[1], self.img.shape[0]), colorfmt='bgr')
             texture.blit_buffer(buffer, colorfmt='bgr', bufferfmt='ubyte')
             return texture
         else:
             raise ValueError("No image loaded to display.")
-
+    
     def get_original_image(self):
         return self.original_img

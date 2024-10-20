@@ -58,6 +58,7 @@ class MainApp(BoxLayout):
 
             "grayscale":cagm.grayscale,
             "brightness":cagm.change_brightness,
+            "apply_color_scheme":cagm.apply_color_scheme
             }
 
         img_comparator = BoxLayout(orientation = 'horizontal')
@@ -91,6 +92,7 @@ class MainApp(BoxLayout):
         self.generate_widgets()
                 
         self.image_handler = None
+        self.load_file("data/example_data/example_img.jpg")
 
 
     def generate_widgets(self):
@@ -124,11 +126,12 @@ class MainApp(BoxLayout):
 
     def apply_augmentation(self, func_name, *args):
         if self.image_handler is not None:
-            img = self.image_handler.get_image()
+            img = self.image_handler.get_image()  # This should return a NumPy array
             func = self.kacpapi_function_map.get(func_name)
             print("apply_augmentation - function:", func, "img:", img)
             if func:
-                self.image_handler.img = func(img, *args)
+                augmented_img = func(img, *args)
+                self.image_handler.img = augmented_img
                 self.display_image(self.image_handler.get_image(), self.augmented_image)
 
     def generate_augmentation_methods(self):
@@ -162,7 +165,7 @@ class MainApp(BoxLayout):
     def revert_img(self, instance):
         if self.image_handler is not None:
             og_img = self.image_handler.get_original_image()
-            print(og_img)
+            print("reverting to:", og_img)
             self.display_image(og_img, self.augmented_image)
         else:
             print("no image selected!")
@@ -219,6 +222,7 @@ class MainApp(BoxLayout):
         
 class MyKivyApp(App):
     def build(self):
+        #self.icon = "data/"
         return MainApp()
 
 if __name__ == '__main__':
