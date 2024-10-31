@@ -117,7 +117,7 @@ class MainApp(BoxLayout):
     def create_button_callback(self, func_name, text_input):
         def button_callback(instance):
             if text_input.text != "":
-                value = int(text_input.text) #this should be made more robust
+                value = text_input.text #this should be made more robust
             else:
                 value = 0
             print("btn callback value:", value)
@@ -128,36 +128,12 @@ class MainApp(BoxLayout):
         if self.image_handler is not None:
             img = self.image_handler.get_image()  # This should return a NumPy array
             func = self.kacpapi_function_map.get(func_name)
-            print("apply_augmentation - function:", func, "img:", img)
+            print("apply_augmentation - function:", func, "img:", img, "with arguments:", *args)
             if func:
                 augmented_img = func(img, *args)
                 self.image_handler.img = augmented_img
                 self.display_image(self.image_handler.get_image(), self.augmented_image)
 
-    def generate_augmentation_methods(self):
-        for func_name in self.function_map:
-            # Dynamically create a function
-            def create_callback(name):
-                # Callback for buttons (no additional arguments)
-                def callback(instance):
-                    self.apply_augmentation(name)
-                return callback
-
-            # For sliders (which take value arguments)
-            def create_slider_callback(name):
-                def slider_callback(instance, value):
-                    self.apply_augmentation(name, value)
-                return slider_callback
-
-            # Create apply_ methods dynamically and assign them
-            if func_name in ['brightness', 'scale']:  # Slider functions
-                func = create_slider_callback(func_name)
-            else:  # Button functions
-                func = create_callback(func_name)
-
-            # Assign the function to the class instance (self)
-            setattr(self, f'apply_{func_name}', types.MethodType(func, self))
-        
     def open_file_picker(self, instance):
         file_picker = FilePickerPopup()
         file_picker.open()
@@ -176,7 +152,7 @@ class MainApp(BoxLayout):
     def apply_augment(self, instance):
         if self.image_handler is not None:
             image_to_apply = self.augmented_image.texture
-            print(image_to_apply)
+            print("applying something to", image_to_apply)
             self.image_handler.texture_to_image(image_to_apply)
         self.display_image(self.image_handler.get_image(), self.augmented_image)
         
@@ -190,32 +166,6 @@ class MainApp(BoxLayout):
             texture = self.image_handler.display_image()
             image_widget.texture = texture
 
-    def apply_dithering(self, instance):
-        if self.image_handler is not None:
-            img = self.image_handler.get_image()
-            self.image_handler.img = pxl.dithering(img)
-            self.display_image(self.image_handler.get_image(), self.augmented_image)
-
-    def apply_grayscale(self, instance):
-        if self.image_handler is not None:
-            img = self.image_handler.get_image()
-            self.image_handler.img = cagm.grayscale(img)
-            self.display_image(self.image_handler.get_image(), self.augmented_image)
-
-    # when grayscale throws error: invalid number of channels in input image scn is 1
-    def apply_brightness(self, instance, value):
-        if self.image_handler is not None:
-            img = self.image_handler.get_image()
-            self.image_handler.img = cagm.change_brightness(img, value)
-            self.display_image(self.image_handler.get_image(), self.augmented_image)
-
-    def apply_scale(self, instance):
-        value = int(self.text_input.text)
-        print("scale value:", value)
-        if self.image_handler is not None:
-            img = self.image_handler.get_image()
-            self.image_handler.img = pxl.change_image_scale(img, value)
-            self.display_image(self.image_handler.get_image(), self.augmented_image)
     def on_texture_load(self, instance, texture):
         instance.texture.min_filter = 'nearest'
         instance.texture.mag_filter = 'nearest'

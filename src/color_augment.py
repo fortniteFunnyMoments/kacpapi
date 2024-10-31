@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 from src.image_manipulator import get_image_format 
 
 def grayscale(image, *args):
@@ -14,6 +15,8 @@ def grayscale(image, *args):
 
 def change_brightness(image, value):
     img_format, _ = get_image_format(image)
+    value = np.uint8(value)
+    print("change brightness val", value)
     
     if img_format == 'bgr':
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -32,6 +35,8 @@ def change_brightness(image, value):
         raise ValueError("Unsupported image format for brightness adjustment")
 
 def apply_color_scheme(image, scheme):
+    img_format, _ = get_image_format(image)
+    
     if img_format == 'bgr':
         color_array = []
         for color in scheme.split():
@@ -57,3 +62,6 @@ def find_closest_color(pixel_rgb, palette_rgb):
             closest_color = color
     
     return closest_color
+
+def euclidean_distance(color1, color2):
+    return math.sqrt(sum((comp1 - comp2) ** 2 for comp1, comp2 in zip(color1, color2)))
