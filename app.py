@@ -113,7 +113,6 @@ class MainApp(BoxLayout):
 
             self.add_widget(augment_widget_box)
 
-
     def create_button_callback(self, func_name, text_input):
         def button_callback(instance):
             if text_input.text != "":
@@ -140,11 +139,14 @@ class MainApp(BoxLayout):
 
     def revert_img(self, instance):
         if self.image_handler is not None:
+            curr_img = self.image_handler.get_image()         
             og_img = self.image_handler.get_original_image()
-            print("reverting to:", og_img)
-            self.display_image(og_img, self.augmented_image)
+            print("reverting to:", og_img, "from:", curr_img)
+            texture = self.image_handler.display_image(og_img)
+            self.augmented_image.texture = texture
         else:
             print("no image selected!")
+        print("now augmented image is:", self.augmented_image.texture)
         
     def save_img(self, instance):
         print("Image was saved!")
@@ -163,7 +165,8 @@ class MainApp(BoxLayout):
 
     def display_image(self, img, image_widget):
         if self.image_handler is not None:
-            texture = self.image_handler.display_image()
+            # change texture = self.image_handler.display_image() to texture = self.img.display_image()
+            texture = self.image_handler.display_image(img)
             image_widget.texture = texture
 
     def on_texture_load(self, instance, texture):

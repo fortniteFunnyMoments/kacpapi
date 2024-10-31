@@ -18,7 +18,7 @@ class ImageManipulator:
         self.img = None
         self.original_img = None
         if path:
-            self.set_image(path)
+            self.set_image(path)        
 
     def texture_to_image(self, texture):
         pixel_data = texture.pixels
@@ -75,16 +75,16 @@ class ImageManipulator:
         else:
             raise ValueError("No image to save.")
 
-    def display_image(self):
-        if self.img is not None:
-            if len(self.img.shape) == 2:  # Grayscale image
+    def display_image(self, img):
+        if img is not None:
+            if len(img.shape) == 2:  # Grayscale image
                 # Convert grayscale to a 3-channel image (BGR) for displaying in Kivy
-                display_img = cv2.cvtColor(self.img, cv2.COLOR_GRAY2BGR)
+                display_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
             else:
-                display_img = self.img
+                display_img = img
 
             buffer = cv2.flip(display_img, 0).tobytes()
-            texture = Texture.create(size=(self.img.shape[1], self.img.shape[0]), colorfmt='bgr')
+            texture = Texture.create(size=(img.shape[1], img.shape[0]), colorfmt='bgr')
             texture.blit_buffer(buffer, colorfmt='bgr', bufferfmt='ubyte')
             return texture
         else:

@@ -15,7 +15,7 @@ def grayscale(image, *args):
 
 def change_brightness(image, value):
     img_format, _ = get_image_format(image)
-    value = np.uint8(value)
+    value = int(value)
     print("change brightness val", value)
     
     if img_format == 'bgr':
