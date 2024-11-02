@@ -1,0 +1,24 @@
+import opencv
+
+def get_nth_frames_from_video(self, video_path, n):
+        frames = []
+        cap = cv2.VideoCapture(video_path)
+        
+        if not cap.isOpened():
+            print("Error: Could not open video.")
+            return frames
+        
+        frame_count = 0
+        
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            
+            if frame_count % n == 0:
+                frames.append(frame)
+            
+            frame_count += 1
+
+        cap.release()
+        return frames

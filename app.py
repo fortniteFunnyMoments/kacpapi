@@ -1,8 +1,9 @@
 # import os for saving
 import os
 
-# import image handler logic
+# import image and video handler logic
 from src.image_manipulator import ImageManipulator
+import src.video_manipulator as vidman
 
 # import actual logic
 import src.pixelator as pxl
@@ -22,6 +23,34 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
 from kivy.graphics.texture import Texture
 
+class FrameRatePopup(Popup):
+    def __init__(self, frame_rate_callback, **kwargs):
+        super(FrameRatePopup, self).__init__(**kwargs)
+        self.title = 'Select Frame Rate'
+        self.size_hint = (0.9, 0.4)
+
+        layout = BoxLayout(orientation='vertical')
+        self.frame_rate_input = TextInput(hint_text="Enter frame rate (N)", multiline=False, size_hint_y=None, height=40)
+        layout.add_widget(self.frame_rate_input)
+
+        button_layout = BoxLayout(size_hint_y=None, height=50)
+        select_button = Button(text="OK", on_press=self.select_frame_rate)
+        cancel_button = Button(text="Cancel", on_press=self.dismiss)
+
+        button_layout.add_widget(select_button)
+        button_layout.add_widget(cancel_button)
+        layout.add_widget(button_layout)
+        self.content = layout
+
+        self.frame_rate_callback = frame_rate_callback
+
+    def select_frame_rate(self, instance):
+        try:
+            n = int(self.frame_rate_input.text.strip())
+            self.dismiss()
+            self.frame_rate_callback(n)
+        except ValueError:
+            print("Please enter a valid integer.")
 
 class SaveFilePopup(Popup):
     def __init__(self, save_callback, **kwargs):
@@ -83,7 +112,7 @@ class FilePickerPopup(Popup):
         self.size_hint = (0.9, 0.9)
 
         layout = BoxLayout(orientation='vertical')
-        self.filechooser = FileChooserListView(filters=['*.png', '*.jpg', '*.jpeg', '*.mp4'])
+        self.filechooser = FileChooserListView(filters=['*.png', '*.jpg', '*.jpeg', '*.mp4', '*.avi', '*.mov'])
         layout.add_widget(self.filechooser)
 
         button_layout = BoxLayout(size_hint_y=None, height=50)
@@ -98,8 +127,17 @@ class FilePickerPopup(Popup):
     def select_file(self, instance):
         selected = self.filechooser.selection
         if selected:
+            file_path = selected[0]
             self.dismiss()
-            App.get_running_app().root.load_file(selected[0])
+            if file_path.endswith(('.mp4', '.avi', '.mov')):  
+                frame_rate_popup = FrameRatePopup(lambda n: App.get_running_app().root.load_video(n, file_path))
+                frame_rate_popup.open()
+            else:
+                App.get_running_app().root.load_file(file_path)
+
+    def on_frame_rate_selected(self, frame_rate):
+        App.get_running_app().root.load_video(frame_rate)
+        
     
 class MainApp(BoxLayout):
     def __init__(self, **kwargs):
@@ -130,6 +168,13 @@ class MainApp(BoxLayout):
         img_comparator.add_widget(self.augmented_image)
         self.add_widget(self.label)
         self.add_widget(img_comparator)
+
+        self.browse_buttons = BoxLayout(orientation='horizontal', size_hint_y=None, height=50)
+        self.prev_button = Button(text="<", on_press=self.previous_frame, disabled=True)
+        self.next_button = Button(text=">", on_press=self.next_frame, disabled=True)
+        self.browse_buttons.add_widget(self.prev_button)
+        self.browse_buttons.add_widget(self.next_button)
+        self.add_widget(self.browse_buttons)
 
         general_img_operator = BoxLayout(orientation = 'horizontal')
         
@@ -233,11 +278,54 @@ class MainApp(BoxLayout):
         self.display_image(self.image_handler.get_image(), self.original_image)
         self.label.text = f"Selected File: {file_path}"
 
+    def load_video(self, n, path):
+        print("n:", n, "path:", path)
+        #frame_rate_popup = FrameRatePopup(self.extract_frames(n, path))
+        self.extract_frames(n, path)
+        #frame_rate_popup.open()
+
+    def extract_frames(self, n, path):
+        raw_frames = vidman.get_frames_from_video(path, n)
+        self.video_frames = [ImageManipulator() for _ in raw_frames]  #create image manipulators 
+
+        for i, frame in enumerate(raw_frames):
+            self.video_frames[i].img = frame
+            
+        self.current_frame_index = 0
+
+        if self.video_frames:
+            # Use the existing display_image method
+            self.display_image(self.video_frames[self.current_frame_index].get_image(), self.original_image)  # Display the first frame
+            self.prev_button.disabled = False
+            self.next_button.disabled = False
+            self.label.text = f"Extracted {len(self.video_frames)} frames."
+        else:
+            self.label.text = "No frames extracted."
+            
+    def previous_frame(self, instance):
+        if self.video_frames and self.current_frame_index > 0:
+            self.current_frame_index -= 1
+            self.change_frame(self.current_frame_index)
+
+    def next_frame(self, instance):
+        if self.video_frames and self.current_frame_index < len(self.video_frames) - 1:
+            self.current_frame_index += 1
+            self.change_frame(self.current_frame_index)
+
+    def change_frame(self, idx):
+        #self.new_img = self.video_frames[idx].get_image()
+        #self.image_handler = self.new_img
+        #self.image_handler.set_image(self.new_img)
+        self.image_handler = self.video_frames[idx]
+        self.display_image(self.image_handler.get_image(), self.original_image)
+        
+        
+            
     def display_image(self, img, image_widget):
         if self.image_handler is not None:
             texture = self.image_handler.display_image(img)
             image_widget.texture = texture
-
+            
     def on_texture_load(self, instance, texture):
         instance.texture.min_filter = 'nearest'
         instance.texture.mag_filter = 'nearest'
