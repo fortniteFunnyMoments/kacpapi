@@ -1,3 +1,6 @@
+# import os for saving
+import os
+
 # import image handler logic
 from src.image_manipulator import ImageManipulator
 
@@ -18,6 +21,60 @@ from kivy.uix.slider import Slider
 from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
 from kivy.graphics.texture import Texture
+
+
+class SaveFilePopup(Popup):
+    def __init__(self, save_callback, **kwargs):
+        super(SaveFilePopup, self).__init__(**kwargs)
+        self.title = 'Save Image As'
+        self.size_hint = (0.9, 0.9)
+
+        self.selected_directory = None
+        
+        layout = BoxLayout(orientation='vertical', spacing=10)
+        
+        self.filechooser = FileChooserListView(dirselect=True)
+        self.filechooser.bind(selection=self.update_selected_directory)
+        layout.add_widget(self.filechooser)
+
+        # this needs to append .jpg or .png automatically
+        self.filename_input = TextInput(hint_text="Enter filename (e.g., image.png)DONT FORGET .png OR .jpg!", multiline=False, size_hint_y=None, height=40)
+        layout.add_widget(self.filename_input)
+        
+        button_layout = BoxLayout(size_hint_y=None, height=50)
+        save_button = Button(text="Save", on_press=lambda *args: self.save(save_callback))
+        cancel_button = Button(text="Cancel", on_press=self.dismiss)
+        
+        button_layout.add_widget(save_button)
+        button_layout.add_widget(cancel_button)
+        layout.add_widget(button_layout)
+        
+        self.content = layout
+
+    def update_selected_directory(self, filechooser, selection):
+        print("selection happened", selection)
+        if selection:
+            selected_path = selection[0]
+            if os.path.isdir(selected_path):
+                self.selected_directory = selected_path
+            else:                
+                self.selected_directory = filechooser.path
+
+    def save(self, save_callback):
+        directory = self.selected_directory
+        filename = self.filename_input.text.strip()
+
+        if not directory:
+            print("Please select a directory.")
+            return
+        if not filename:
+            print("Please enter a filename.")
+            return
+        
+        file_path = os.path.join(directory, filename)
+        self.dismiss()
+        
+        save_callback(file_path)
 
 class FilePickerPopup(Popup):
     def __init__(self, **kwargs):
@@ -149,7 +206,20 @@ class MainApp(BoxLayout):
         print("now augmented image is:", self.augmented_image.texture)
         
     def save_img(self, instance):
-        print("Image was saved!")
+        # Open the SaveFilePopup, passing the save_image method as a callback
+        save_popup = SaveFilePopup(self.save_image_to_path)
+        save_popup.open()
+
+    # Callback to save the image at the specified path
+    def save_image_to_path(self, path):
+        # Ensure path has an extension
+        if not path.endswith(('.jpg', '.png')):
+            path += '.png'  # Default to PNG if no extension is given
+        if self.image_handler is not None:
+            print(f"Saving image to {path}")
+            self.image_handler.save_image(path)
+        else:
+            print("No image loaded to save.")
 
     def apply_augment(self, instance):
         if self.image_handler is not None:
@@ -165,7 +235,6 @@ class MainApp(BoxLayout):
 
     def display_image(self, img, image_widget):
         if self.image_handler is not None:
-            # change texture = self.image_handler.display_image() to texture = self.img.display_image()
             texture = self.image_handler.display_image(img)
             image_widget.texture = texture
 

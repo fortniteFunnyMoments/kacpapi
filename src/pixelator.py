@@ -3,6 +3,7 @@ import numpy as np
 from src.image_manipulator import get_image_format
 
 def change_image_scale(image, scale):
+    scale = int(scale)
     print(image)
     width = int(image.shape[1] * scale / 100)
     height = int(image.shape[0] * scale / 100)

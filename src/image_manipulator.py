@@ -70,15 +70,21 @@ class ImageManipulator:
         return self.img
 
     def save_image(self, path):
-        if self.img is not None:
-            cv2.imwrite(path, self.img)
+        print("attempting to write image to ", path)
+        if self.img is not None:            
+            file_ext = path.split('.')[-1].lower()
+            if file_ext in ('jpg', 'jpeg'):
+                cv2.imwrite(path, self.img, [int(cv2.IMWRITE_JPEG_QUALITY), 90])
+            elif file_ext == 'png':
+                cv2.imwrite(path, self.img, [int(cv2.IMWRITE_PNG_COMPRESSION), 3])
+            else:
+                raise ValueError("Unsupported file extension. Please use .jpg or .png.")
         else:
             raise ValueError("No image to save.")
 
     def display_image(self, img):
         if img is not None:
-            if len(img.shape) == 2:  # Grayscale image
-                # Convert grayscale to a 3-channel image (BGR) for displaying in Kivy
+            if len(img.shape) == 2:     
                 display_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
             else:
                 display_img = img
