@@ -66,8 +66,7 @@ class SaveFilePopup(Popup):
         self.filechooser.bind(selection=self.update_selected_directory)
         layout.add_widget(self.filechooser)
 
-        # this needs to append .jpg or .png automatically
-        self.filename_input = TextInput(hint_text="Enter filename (e.g., image.png)DONT FORGET .png OR .jpg!", multiline=False, size_hint_y=None, height=40)
+        self.filename_input = TextInput(hint_text="If you are saving images from video enter name of a directory that will be created and the images exported to.\nIf you are saving just one image enter filename (e.g., image.png)DONT FORGET .png OR .jpg!", multiline=False, size_hint_y=None, height=40)
         layout.add_widget(self.filename_input)
         
         button_layout = BoxLayout(size_hint_y=None, height=50)
@@ -251,20 +250,29 @@ class MainApp(BoxLayout):
         print("now augmented image is:", self.augmented_image.texture)
         
     def save_img(self, instance):
-        # Open the SaveFilePopup, passing the save_image method as a callback
         save_popup = SaveFilePopup(self.save_image_to_path)
         save_popup.open()
 
-    # Callback to save the image at the specified path
     def save_image_to_path(self, path):
-        # Ensure path has an extension
-        if not path.endswith(('.jpg', '.png')):
-            path += '.png'  # Default to PNG if no extension is given
-        if self.image_handler is not None:
-            print(f"Saving image to {path}")
-            self.image_handler.save_image(path)
+        if hasattr(self, 'video_frames') and self.video_frames:           
+            video_dir = path
+            os.makedirs(video_dir, exist_ok=True)
+            print(f"Saving video frames to {video_dir}")
+            for i, frame_handler in enumerate(self.video_frames):
+                frame_path = os.path.join(video_dir, f"frame_{i+1}.png")
+                frame_handler.save_image(frame_path)
+                print(f"Saved frame {i+1} to {frame_path}")
+            self.label.text = f"Saved {len(self.video_frames)} frames to {video_dir}."
         else:
-            print("No image loaded to save.")
+            if not path.endswith(('.jpg', '.png')):
+                path += '.png' 
+            if self.image_handler is not None:
+                print(f"Saving single image to {path}")
+                self.image_handler.save_image(path)
+                self.label.text = f"Image saved to {path}"
+            else:
+                print("No image loaded to save.")
+                self.label.text = "No image loaded to save."
 
     def apply_augment(self, instance):
         if self.image_handler is not None:
@@ -280,9 +288,7 @@ class MainApp(BoxLayout):
 
     def load_video(self, n, path):
         print("n:", n, "path:", path)
-        #frame_rate_popup = FrameRatePopup(self.extract_frames(n, path))
         self.extract_frames(n, path)
-        #frame_rate_popup.open()
 
     def extract_frames(self, n, path):
         raw_frames = vidman.get_frames_from_video(path, n)
@@ -294,8 +300,7 @@ class MainApp(BoxLayout):
         self.current_frame_index = 0
 
         if self.video_frames:
-            # Use the existing display_image method
-            self.display_image(self.video_frames[self.current_frame_index].get_image(), self.original_image)  # Display the first frame
+            self.display_image(self.video_frames[self.current_frame_index].get_image(), self.original_image) 
             self.prev_button.disabled = False
             self.next_button.disabled = False
             self.label.text = f"Extracted {len(self.video_frames)} frames."
@@ -317,10 +322,9 @@ class MainApp(BoxLayout):
         #self.image_handler = self.new_img
         #self.image_handler.set_image(self.new_img)
         self.image_handler = self.video_frames[idx]
-        self.display_image(self.image_handler.get_image(), self.original_image)
+        self.display_image(self.image_handler.get_image(), self.original_image) #mayb get original image?
+        self.display_image(self.image_handler.get_image(), self.augmented_image)
         
-        
-            
     def display_image(self, img, image_widget):
         if self.image_handler is not None:
             texture = self.image_handler.display_image(img)
