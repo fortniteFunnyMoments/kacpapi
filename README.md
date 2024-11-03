@@ -12,6 +12,7 @@ Currently, KACPAPI supports following image manipulation operations:
  - [ ] Dithering
  - [ ] Better GUI
  - [ ] Builds for Android/Windows
+
 These features work on both image and video files, however, saving modified video images is currently worked on. Some of these features may be WIP.
 ## Building
 To build just install dependencies located in [reqs](reqs):
