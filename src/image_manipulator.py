@@ -3,11 +3,11 @@ import numpy as np
 from kivy.graphics.texture import Texture
 
 def get_image_format(image):
-    if len(image.shape) == 2:  # Grayscale images have two dimensions (height, width)
+    if len(image.shape) == 2:
         return 'grayscale', 1
-    elif len(image.shape) == 3 and image.shape[2] == 3:  # Color images with 3 channels (BGR)
+    elif len(image.shape) == 3 and image.shape[2] == 3: 
         return 'bgr', 3
-    elif len(image.shape) == 3 and image.shape[2] == 4:  # Images with 4 channels (RGBA)
+    elif len(image.shape) == 3 and image.shape[2] == 4:
         return 'rgba', 4
     else:
         raise ValueError("Unknown image format.")

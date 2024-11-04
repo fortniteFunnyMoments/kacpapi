@@ -9,7 +9,7 @@ def grayscale(image, *args):
     if img_format == 'bgr':
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     elif img_format == 'grayscale':
-        return image  # Already grayscale, no conversion needed
+        return image
     else:
         raise ValueError("Unsupported image format for grayscale conversion")
 

@@ -14,10 +14,10 @@ def change_image_scale(image, scale):
 def add_outline(image, *args):
     img_format, _ = get_image_format(image)
     
-    if img_format == 'bgr':  # Convert to grayscale before detecting edges
+    if img_format == 'bgr': 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     elif img_format == 'grayscale':
-        gray = image  # Already grayscale
+        gray = image
     else:
         raise ValueError("Unsupported image format for add_outline")
 
@@ -29,7 +29,7 @@ def add_outline(image, *args):
 def dithering(image, *args):
     img_format, _ = get_image_format(image)
     
-    if img_format == 'bgr':  # Convert to grayscale for dithering
+    if img_format == 'bgr': 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     elif img_format == 'grayscale':
         gray = image
@@ -37,7 +37,6 @@ def dithering(image, *args):
         raise ValueError("Unsupported image format for dithering")
     
     output = gray.copy().astype(np.float32)
-    # Dithering algorithm...
     return output
 
 def shift_edges(edges, dx, dy):
@@ -45,7 +44,7 @@ def shift_edges(edges, dx, dy):
     shifted_edges = cv2.warpAffine(edges, translation_matrix, (edges.shape[1], edges.shape[0]))
     return shifted_edges
 
-def detect_edges(image): #image has to be grayscale
+def detect_edges(image): 
     edges = cv2.Canny(image, 100, 200)
     print("detect edges edges:", edges)
     return edges
